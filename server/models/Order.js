@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { ORDER_STATUSES } from '../constants.js'
+import { notifyNewOrder } from '../utils/notify.js'
 
 // An order line is a SNAPSHOT: we copy the name and price at purchase time, so
 // later price changes or deleted products never change an old order.
@@ -31,10 +32,18 @@ const orderSchema = new mongoose.Schema(
     total: { type: Number, required: true },
     paymentMethod: { type: String, enum: ['paystack', 'cod'], required: true },
     paymentStatus: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
-    paymentRef: { type: String, default: '' }, // filled in Part 3 (Paystack)
+    paymentRef: { type: String, default: '' }, // filled in later (Paystack)
     status: { type: String, enum: ORDER_STATUSES, default: 'pending' },
   },
   { timestamps: true },
 )
+
+// Runs right after an order is saved. Orders are only SAVED when created; the
+// routes change existing orders with findOneAndUpdate, which does not trigger
+// this hook. So this fires once per new order. It is not awaited, so the
+// customer never waits for Telegram.
+orderSchema.post('save', (doc) => {
+  notifyNewOrder(doc)
+})
 
 export default mongoose.model('Order', orderSchema)

@@ -1,13 +1,18 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import usePendingOrders from '../hooks/usePendingOrders'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const { count } = useCart()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
+
+  const isAdmin = !!(user && user.role === 'admin')
+  const pending = usePendingOrders(isAdmin, pathname)
 
   return (
     <header className="header">
@@ -19,8 +24,10 @@ export default function Header() {
         <nav className={`nav${open ? ' open' : ''}`}>
           <NavLink to="/shop" onClick={close}>Shop</NavLink>
           {user && <NavLink to="/orders" onClick={close}>My orders</NavLink>}
-          {user && user.role === 'admin' && (
-            <NavLink to="/admin" onClick={close}>Admin</NavLink>
+          {isAdmin && (
+            <NavLink to="/admin" onClick={close}>
+              Admin{pending > 0 && <b className="nav-badge">{pending}</b>}
+            </NavLink>
           )}
           {user ? (
             <button
@@ -49,6 +56,7 @@ export default function Header() {
           onClick={() => setOpen(!open)}
         >
           {open ? '✕' : '☰'}
+          {pending > 0 && !open && <b className="nav-badge">{pending}</b>}
         </button>
       </div>
     </header>

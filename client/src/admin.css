@@ -53,3 +53,8 @@
 @media (min-width: 760px) {
   .adm-grid.cols { grid-template-columns: 1fr 1fr; align-items: start; }
 }
+
+/* Pending-orders badge on the Admin link */
+.nav-badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 0.72rem; font-weight: 700; }
+.burger { position: relative; }
+.burger .nav-badge { position: absolute; top: -6px; right: -6px; margin: 0; }
