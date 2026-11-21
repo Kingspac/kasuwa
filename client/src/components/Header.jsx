@@ -18,8 +18,9 @@ export default function Header() {
 
         <nav className={`nav${open ? ' open' : ''}`}>
           <NavLink to="/shop" onClick={close}>Shop</NavLink>
-          {user && (
-            <NavLink to="/orders" onClick={close}>My orders</NavLink>
+          {user && <NavLink to="/orders" onClick={close}>My orders</NavLink>}
+          {user && user.role === 'admin' && (
+            <NavLink to="/admin" onClick={close}>Admin</NavLink>
           )}
           {user ? (
             <button

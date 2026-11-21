@@ -58,6 +58,11 @@ async function request(path, { method = 'GET', body } = {}) {
     }
     throw new Error((data && data.message) || 'Something went wrong')
   }
+
+  // A successful reply that is not JSON means the request never reached the API.
+  if (data === null) {
+    throw new Error('The server sent an unexpected reply. Make sure the API is running (npm run dev in ~/kasuwa).')
+  }
   return data
 }
 
@@ -72,13 +77,25 @@ const qs = (params = {}) => {
 }
 
 export const api = {
+  // Accounts
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
   login: (body) => request('/api/auth/login', { method: 'POST', body }),
   me: () => request('/api/auth/me'),
+
+  // Shop
   products: (params) => request(`/api/products${qs(params)}`),
   product: (id) => request(`/api/products/${id}`),
   createOrder: (body) => request('/api/orders', { method: 'POST', body }),
   myOrders: () => request('/api/orders/mine'),
   order: (id) => request(`/api/orders/${id}`),
   cancelOrder: (id) => request(`/api/orders/${id}/cancel`, { method: 'POST' }),
+
+  // Admin only (the server rejects anyone who is not an admin)
+  adminStats: () => request('/api/admin/stats'),
+  adminOrders: (status) => request(`/api/orders${qs({ status })}`),
+  setOrderStatus: (id, status) =>
+    request(`/api/orders/${id}/status`, { method: 'PUT', body: { status } }),
+  createProduct: (body) => request('/api/products', { method: 'POST', body }),
+  updateProduct: (id, body) => request(`/api/products/${id}`, { method: 'PUT', body }),
+  deleteProduct: (id) => request(`/api/products/${id}`, { method: 'DELETE' }),
 }
